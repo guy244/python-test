@@ -13,8 +13,8 @@ edit_row = ''
 edit_name = ''
 
 
-#Funcations for encoding and decoding the user passwords with a Key Password and then using Base64, to give it a better "hashed look"
-def encode_password(key, string):
+#Funcations for encrypting and decrypting the user passwords with a Key Password and then using Base64, to give it a better "hashed look"
+def encrypt_password(key, string):
     encoded_chars = []
     for i in range(len(string)):
         key_c = key[i % len(key)]
@@ -24,7 +24,7 @@ def encode_password(key, string):
     encoded_string = encoded_string.encode()
     return base64.urlsafe_b64encode(encoded_string)
 
-def decode_password(key, string):
+def decrypt_password(key, string):
     decoded_chars = []
     string = base64.urlsafe_b64decode(string)
     string = string.decode()
@@ -147,7 +147,7 @@ class Table(QtWidgets.QMainWindow, table.Ui_MainWindow):
             name = QtWidgets.QTableWidgetItem(key)
             key_password = QtWidgets.QTableWidgetItem(data[key])
             key_password = key_password.text()
-            key_password = decode_password(user_password,key_password)      # Before the password is shown in the table, we most make sure we Decode it using the func we created, unless we will get gibberish
+            key_password = decrypt_password(user_password,key_password)      # Before the password is shown in the table, we most make sure we Decode it using the func we created, unless we will get gibberish
             self.editButton = QtWidgets.QPushButton('Edit')
             self.verticalLayout.addWidget(self.editButton)  #Create an Edit button for each row
             self.tableWidget.setItem(row,0,name) #Create the row and the Name and populate it
@@ -194,7 +194,7 @@ class Add_Password(QtWidgets.QDialog, add_item.Ui_Add):
         data_dict = {}
         website = self.websiteForm.text()
         password = self.passwordForm.text()
-        password = encode_password(user_password,password) #Encoding the password, so someone with access to the computer won't be able to get it!
+        password = encrypt_password(user_password,password) #Encoding the password, so someone with access to the computer won't be able to get it!
         password = password.decode()
 
         with open('data.json','r') as f:    #First reading the data file and getting the Dictonary inside
@@ -221,7 +221,7 @@ class Update_Password(QtWidgets.QDialog, update.Ui_Dialog):
         global edit_name
         data_dict = {}
         New_Password = self.updateForm.text()
-        New_Password = encode_password(user_password,New_Password)      #Make sure the new password is incoded with the Key Password
+        New_Password = encrypt_password(user_password,New_Password)      #Make sure the new password is incoded with the Key Password
         New_Password = New_Password.decode()
 
         with open('data.json','r') as f:    #Again read the Dictonary from the JSON file and then write the updated one!

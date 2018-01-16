@@ -72,7 +72,7 @@ def populate_data(user_password):
         key_password = key_password.decode()
         decrypted_data[name] = key_password
 
-        return decrypted_data
+    return decrypted_data
 
 
 def add_password(name,password,user_password):

@@ -77,27 +77,33 @@ class PasswordDialgo(QtWidgets.QMainWindow, main_window.Ui_Table):
         data = populate_data(user_password)
 
         self.tableWidget.clear()
+        item = QtWidgets.QTableWidgetItem()
+        self.tableWidget.setHorizontalHeaderItem(0, item)
+        self.tableWidget.horizontalHeaderItem(0).setText('Name')
+        item = QtWidgets.QTableWidgetItem()
+        self.tableWidget.setHorizontalHeaderItem(1, item)
+        self.tableWidget.horizontalHeaderItem(1).setText('Password')
+        item = QtWidgets.QTableWidgetItem()
+        self.tableWidget.setHorizontalHeaderItem(2, item)
+        self.tableWidget.horizontalHeaderItem(2).setText('Edit')
+        #item.setText("Name")
         row = 0
-        try:
-            for value, key in enumerate(data):
-                name = QtWidgets.QTableWidgetItem(key)
-                password = QtWidgets.QTableWidgetItem(data[key])
+        for value, key in enumerate(data):
+            name = QtWidgets.QTableWidgetItem(key)
+            password = QtWidgets.QTableWidgetItem(data[key])
 
-                self.editButton = QtWidgets.QPushButton('Edit')
-                self.verticalLayout.addWidget(self.editButton)  #Create an Edit button for each row
-                self.tableWidget.setItem(row,0,name) #Create the row and the Name and populate it
-                self.tableWidget.setItem(row,1,password) #Create the column for the password and populate it
-                self.tableWidget.setCellWidget(row,2,self.editButton) #Place the button in the third column
+            self.editButton = QtWidgets.QPushButton('Edit')
+            self.verticalLayout.addWidget(self.editButton)  #Create an Edit button for each row
+            self.tableWidget.setItem(row,0,name) #Create the row and the Name and populate it
+            self.tableWidget.setItem(row,1,password) #Create the column for the password and populate it
+            self.tableWidget.setCellWidget(row,2,self.editButton) #Place the button in the third column
 
-                index = QtCore.QPersistentModelIndex(
-                    self.tableWidget.model().index(row,2)) #This one was a bit tricky, we are getting the Index(row,column) and sending it to the editItem func every time we press the Edit button
+            index = QtCore.QPersistentModelIndex(
+                self.tableWidget.model().index(row,2)) #This one was a bit tricky, we are getting the Index(row,column) and sending it to the editItem func every time we press the Edit button
 
-                self.editButton.clicked.connect(
-                lambda *args, index=index: self.editItem(index))
-
-                row +=1
-        except:
-            error_message("No data file","Creating data file now...","Data Error")
+            self.editButton.clicked.connect(
+            lambda *args, index=index: self.editItem(index))
+            row +=1
 
 #Func to open the Add Password Dialog
     def add(self):
@@ -118,7 +124,7 @@ class PasswordDialgo(QtWidgets.QMainWindow, main_window.Ui_Table):
 
 #The Add Password Dialog
 class Add_Password(QtWidgets.QDialog, main_window.Ui_Add):
-    def __init__(self, parent=None):
+    def __init__(self, parent=PasswordDialgo):
         super(Add_Password, self).__init__(parent)
         self.setWindowIcon(QtGui.QIcon('icon.png'))
 
@@ -131,14 +137,14 @@ class Add_Password(QtWidgets.QDialog, main_window.Ui_Add):
         website = self.websiteForm.text()
         password = self.passwordForm.text()
         add_password(website,password,user_password)
-
+        self.parent().populate()
 #The Update Dialog
 class UpdatePassword(QtWidgets.QDialog, main_window.Ui_UpdateDialog):
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=PasswordDialgo):
         super(UpdatePassword, self).__init__(parent)
         self.setWindowIcon(QtGui.QIcon('icon.png'))
-
+        self.PasswordDialgo = PasswordDialgo
         self.setupUi(self)
         self.table = PasswordDialgo()
         self.buttonBox.accepted.connect(self.update)        #Run the update func when 'Ok' pressed
@@ -150,22 +156,24 @@ class UpdatePassword(QtWidgets.QDialog, main_window.Ui_UpdateDialog):
         global user_password
         new_password = self.updateForm.text()
         update_password(edit_name,new_password,user_password)
-
+        self.parent().populate()
 
 #Func to delete a password from the database!
 #Simple, just gets the row and name variable del the item from the Dictonary, then close the dialog!
-    def delete(self):
+    def delete(self, Login):
         global edit_name
         delete_password(edit_name)
         self.destroy()
-
+        self.parent().populate()
 
 #Making sure the Login Class runs first!
 def main():
     app = QtWidgets.QApplication(sys.argv)
     form = LoginDialog()
     form.show()
-    app.exec_()
+    #app.exec_()
+    sys.exit(app.exec_())
+
 
 
 if __name__ == '__main__':
